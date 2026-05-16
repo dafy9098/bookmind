@@ -102,7 +102,7 @@ with st.sidebar:
         </div>
     </div>""", unsafe_allow_html=True)
 
-    page = st.radio("Navigasi", ["🏠 Beranda", "🎯 Rekomendasi", "📊 Analitik", "🧠 Tentang Model"],
+    page = st.radio("Navigasi", ["🏠 Beranda", "🔍 Rekomendasi", "📊 Analitik", "🧠 Tentang Model"],
                     label_visibility="collapsed")
     st.divider()
     st.markdown("<div style='font-size:11px;color:#484038;text-transform:uppercase;letter-spacing:.06em'>Dataset</div>", unsafe_allow_html=True)
@@ -119,8 +119,7 @@ def render_rec_card(row, rank, tag_label, tag_color, score_col):
     rating    = row.get("rating", 0)
     author    = row.get("author", row.get("authors", ""))
     image_url = row.get("image", "")
-
-    img_html = f"<img src='{image_url}' style='width:48px;height:68px;object-fit:cover;border-radius:4px;margin-right:14px;flex-shrink:0'>" if image_url else ""
+    img_html  = f"<img src='{image_url}' style='width:48px;height:68px;object-fit:cover;border-radius:4px;margin-right:14px;flex-shrink:0'>" if image_url else ""
 
     st.markdown(f"""
     <div class="rec-card">
@@ -140,10 +139,7 @@ def render_rec_card(row, rank, tag_label, tag_color, score_col):
     </div>""", unsafe_allow_html=True)
 
 def plotly_dark(fig, height=None):
-    layout = dict(
-        plot_bgcolor="#111827", paper_bgcolor="#0D1222",
-        font_color="#CCC4B0",
-    )
+    layout = dict(plot_bgcolor="#111827", paper_bgcolor="#0D1222", font_color="#CCC4B0")
     if height:
         layout["height"] = height
     fig.update_layout(**layout)
@@ -157,16 +153,13 @@ def plotly_dark(fig, height=None):
 if page == "🏠 Beranda":
     st.markdown("""
     <div style='text-align:center;padding:40px 0 20px'>
-        <div style='font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#E8A320;margin-bottom:14px'>
-            Statistical Data Mining — ITS Surabaya
-        </div>
         <h1 style='font-size:clamp(28px,4vw,48px);line-height:1.1;margin-bottom:16px'>
             BookMind — <em style='color:#E8A320'>Hybrid</em><br>Recommendation Engine
         </h1>
         <p style='font-size:15px;color:#7A7060;max-width:500px;margin:0 auto 32px;line-height:1.7'>
-            Menggabungkan <strong style='color:#CCC4B0'>Content-Based Filtering</strong> (TF-IDF)
-            dan <strong style='color:#CCC4B0'>Collaborative Filtering</strong> (SVD)
-            untuk rekomendasi buku yang personal.
+            Menemukan buku yang tepat untukmu dengan menggabungkan
+            <strong style='color:#CCC4B0'>Content-Based Filtering</strong> dan
+            <strong style='color:#CCC4B0'>Collaborative Filtering</strong>.
         </p>
     </div>""", unsafe_allow_html=True)
 
@@ -174,7 +167,7 @@ if page == "🏠 Beranda":
     for col, val, label in zip(
         [c1, c2, c3, c4],
         [f"{len(books):,}", f"{len(ratings):,}", f"{ratings['user_id'].nunique():,}", f"{books['rating'].mean():.2f}"],
-        ["Total Buku", "Total Ratings", "Pengguna Aktif", "Avg Rating"]
+        ["Total Buku", "Total Ratings", "Pengguna", "Avg Rating"]
     ):
         with col:
             st.markdown(f"""<div class="metric-card">
@@ -183,17 +176,17 @@ if page == "🏠 Beranda":
             </div>""", unsafe_allow_html=True)
 
     st.divider()
-    st.markdown("<h2 style='text-align:center;margin-bottom:8px'>Metodologi</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align:center;margin-bottom:8px'>Cara Kerja</h2>", unsafe_allow_html=True)
 
     m1, m2, m3 = st.columns(3)
     for col, icon, title, desc in zip(
         [m1, m2, m3],
         ["🧬", "👥", "⚡"],
-        ["Content-Based Filtering", "Collaborative Filtering", "Weighted Hybrid"],
+        ["Content-Based", "Collaborative Filtering", "Weighted Hybrid"],
         [
-            "TF-IDF pada judul & penulis, cosine similarity untuk menemukan buku dengan konten serupa. Solusi cold-start untuk item baru.",
-            "Model-Based CF via truncated SVD (scipy). Dekomposisi matrix user-item untuk latent factors. Evaluasi: RMSE & MAE.",
-            "Score = 0.5×CF + 0.5×CBF. Menutupi kelemahan masing-masing — cold-start dari CBF, serendipity dari CF.",
+            "TF-IDF pada judul & penulis. Cosine similarity menemukan buku dengan konten serupa.",
+            "Truncated SVD pada user-item matrix. Menemukan pola tersembunyi dari perilaku ribuan pembaca.",
+            "Score akhir = 0.5×CF + 0.5×CBF. Menggabungkan kekuatan keduanya.",
         ]
     ):
         with col:
@@ -203,16 +196,14 @@ if page == "🏠 Beranda":
                 <div style='font-size:13px;color:#7A7060;line-height:1.6'>{desc}</div>
             </div>""", unsafe_allow_html=True)
 
-    # Top 5 buku populer dengan cover
     st.divider()
     st.markdown("<h2 style='text-align:center;margin-bottom:16px'>Buku Terpopuler</h2>", unsafe_allow_html=True)
     top5 = books.nlargest(5, "ratings_count")[["title","author","rating","ratings_count","image"]].reset_index(drop=True)
     cols = st.columns(5)
-    for i, (col, row) in enumerate(zip(cols, top5.itertuples())):
+    for col, row in zip(cols, top5.itertuples()):
         with col:
-            img = getattr(row, "image", "")
-            if img:
-                st.markdown(f"<img src='{img}' style='width:100%;border-radius:6px;margin-bottom:8px'>", unsafe_allow_html=True)
+            if row.image:
+                st.markdown(f"<img src='{row.image}' style='width:100%;border-radius:6px;margin-bottom:8px'>", unsafe_allow_html=True)
             st.markdown(f"""
             <div style='font-family:Playfair Display,serif;font-size:13px;color:#EDE5CF;margin-bottom:4px'>{row.title[:40]}{'...' if len(row.title)>40 else ''}</div>
             <div style='font-size:11px;color:#7A7060'>{row.author[:30]}</div>
@@ -220,83 +211,82 @@ if page == "🏠 Beranda":
             """, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────
-# PAGE: REKOMENDASI
+# PAGE: REKOMENDASI (book-based only)
 # ─────────────────────────────────────────────
-elif page == "🎯 Rekomendasi":
-    st.markdown("<h2>Rekomendasi Buku</h2>", unsafe_allow_html=True)
-    tab1, tab2 = st.tabs(["👤 Berdasarkan User", "📖 Berdasarkan Buku"])
+elif page == "🔍 Rekomendasi":
+    st.markdown("<h2>Cari Buku Serupa</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#7A7060'>Ketik judul buku yang kamu suka, sistem akan merekomendasikan buku serupa.</p>", unsafe_allow_html=True)
 
-    # ── TAB 1: USER-BASED ──
-    with tab1:
-        c1, c2 = st.columns([2, 1])
-        with c1:
-            user_id = st.selectbox("Pilih User ID", sorted(ratings["user_id"].unique()), key="uid")
-        with c2:
-            n_recs = st.number_input("Jumlah rekomendasi", 5, 20, 10)
+    search_query = st.text_input("🔍 Cari judul buku...", placeholder="e.g. Harry Potter, The Hobbit, Pride and Prejudice")
+    n_similar    = st.slider("Jumlah rekomendasi", 5, 15, 8)
+    method       = st.radio("Metode", ["⚡ Hybrid", "🧬 Content-Based (TF-IDF)", "👥 Collaborative (SVD)"],
+                             horizontal=True)
 
-        method = st.radio("Metode", ["⚡ Hybrid", "👥 Collaborative Filtering (SVD)", "🧬 Content-Based (TF-IDF)"],
-                          horizontal=True)
+    if search_query:
+        matches = books[books["title"].str.contains(search_query, case=False, na=False)]
+        if matches.empty:
+            st.warning("Tidak ada buku ditemukan.")
+        else:
+            selected_title = st.selectbox("Pilih dari hasil pencarian:", matches["title"].tolist())
+            book_row = matches[matches["title"] == selected_title].iloc[0]
+            book_id  = book_row["book_id"]
 
-        if st.button("🔍 Cari Rekomendasi", key="btn_user"):
-            with st.spinner("Menghitung rekomendasi..."):
-                user_ratings = ratings[ratings["user_id"] == user_id]
-                st.markdown(f"<div style='font-size:13px;color:#7A7060;margin-bottom:16px'>User <strong style='color:#E8A320'>{user_id}</strong> · {len(user_ratings)} buku dirating</div>", unsafe_allow_html=True)
+            img = book_row.get("image", "")
+            st.markdown(f"""
+            <div style='background:#111827;border:1px solid #243258;border-radius:10px;
+                         padding:16px;margin:12px 0 20px;display:flex;gap:16px;align-items:flex-start'>
+                {'<img src="' + img + '" style="width:60px;border-radius:4px;flex-shrink:0">' if img else ''}
+                <div>
+                    <div style='font-size:11px;color:#7A7060;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px'>Buku Dipilih</div>
+                    <div style='font-family:Playfair Display,serif;font-size:18px;color:#EDE5CF'>{book_row.get('title','')}</div>
+                    <div style='font-size:13px;color:#E8A320;margin-top:4px'>{book_row.get('author','')}</div>
+                    <div style='font-size:12px;color:#7A7060;margin-top:4px'>⭐ {book_row.get('rating',0):.2f} · {int(book_row.get('ratings_count',0)):,} ratings</div>
+                </div>
+            </div>""", unsafe_allow_html=True)
 
-                if "Hybrid" in method:
-                    recs, score_col, tag_color, tag_label = hybrid.recommend(user_id, n=int(n_recs)), "hybrid_score", "#E8A320", "Hybrid"
-                elif "Collaborative" in method:
-                    recs, score_col, tag_color, tag_label = svd.recommend(user_id, ratings, books, n=int(n_recs)), "cf_score", "#2DD4BF", "SVD CF"
-                else:
-                    top_book = user_ratings.loc[user_ratings["rating"].idxmax(), "book_id"]
-                    recs, score_col, tag_color, tag_label = cbf.recommend(top_book, n=int(n_recs)), "cbf_score", "#8B5CF6", "CBF"
+            if st.button("🔍 Cari Rekomendasi"):
+                with st.spinner("Mencari buku serupa..."):
 
-                if recs is None or len(recs) == 0:
-                    st.warning("Tidak ada rekomendasi.")
-                else:
-                    # merge image
-                    if "image" not in recs.columns:
-                        recs = recs.merge(books[["book_id","image"]], on="book_id", how="left")
-                    st.markdown(f"<h3>Top {len(recs)} Rekomendasi</h3>", unsafe_allow_html=True)
-                    for i, row in enumerate(recs.itertuples()):
-                        render_rec_card(row._asdict(), i+1, tag_label, tag_color, score_col)
+                    if "Hybrid" in method:
+                        # Hybrid: blend CBF + CF item similarity
+                        cbf_recs = cbf.recommend(book_id, n=n_similar * 2)
+                        cf_recs  = svd.item_cf_similarity(n_similar=n_similar * 2)
+                        cf_ids   = [int(i) for i in cf_recs.get(str(book_id), [])]
 
-    # ── TAB 2: BOOK-BASED ──
-    with tab2:
-        search_query = st.text_input("🔍 Cari judul buku...", placeholder="e.g. Harry Potter, Pride and Prejudice")
-        n_similar    = st.slider("Jumlah buku serupa", 5, 15, 6)
+                        if not cbf_recs.empty:
+                            cbf_recs["cbf_score_norm"] = cbf_recs["cbf_score"]
+                            cbf_recs["cf_boost"]       = cbf_recs["book_id"].apply(lambda b: 0.3 if b in cf_ids else 0.0)
+                            cbf_recs["hybrid_score"]   = 0.7 * cbf_recs["cbf_score_norm"] + cbf_recs["cf_boost"]
+                            recs = cbf_recs.sort_values("hybrid_score", ascending=False).head(n_similar)
+                            if "image" not in recs.columns:
+                                recs = recs.merge(books[["book_id","image"]], on="book_id", how="left")
+                            tag_label, tag_color, score_col = "Hybrid", "#E8A320", "hybrid_score"
+                        else:
+                            recs, tag_label, tag_color, score_col = pd.DataFrame(), "Hybrid", "#E8A320", "hybrid_score"
 
-        if search_query:
-            matches = books[books["title"].str.contains(search_query, case=False, na=False)]
-            if matches.empty:
-                st.warning("Tidak ada buku ditemukan.")
-            else:
-                title_options = matches["title"].tolist()
-                selected_title = st.selectbox("Pilih dari hasil pencarian:", title_options)
-                book_row  = matches[matches["title"] == selected_title].iloc[0]
-                book_id   = book_row["book_id"]
-
-                # Show selected book card
-                img = book_row.get("image", "")
-                st.markdown(f"""
-                <div style='background:#111827;border:1px solid #243258;border-radius:10px;
-                             padding:16px;margin:12px 0 20px;display:flex;gap:16px;align-items:flex-start'>
-                    {'<img src="' + img + '" style="width:60px;border-radius:4px;flex-shrink:0">' if img else ''}
-                    <div>
-                        <div style='font-size:11px;color:#7A7060;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px'>Buku Referensi</div>
-                        <div style='font-family:Playfair Display,serif;font-size:18px;color:#EDE5CF'>{book_row.get('title','')}</div>
-                        <div style='font-size:13px;color:#E8A320;margin-top:4px'>{book_row.get('author','')}</div>
-                        <div style='font-size:12px;color:#7A7060;margin-top:4px'>⭐ {book_row.get('rating',0):.2f} · {int(book_row.get('ratings_count',0)):,} ratings</div>
-                    </div>
-                </div>""", unsafe_allow_html=True)
-
-                if st.button("🔍 Cari Buku Serupa", key="btn_book"):
-                    with st.spinner("Mencari..."):
+                    elif "Content" in method:
                         recs = cbf.recommend(book_id, n=n_similar)
                         if "image" not in recs.columns:
                             recs = recs.merge(books[["book_id","image"]], on="book_id", how="left")
-                        st.markdown("<h3>Buku Serupa (Content-Based)</h3>", unsafe_allow_html=True)
+                        tag_label, tag_color, score_col = "CBF", "#8B5CF6", "cbf_score"
+
+                    else:  # SVD item-based
+                        cf_ids = [int(i) for i in svd.item_cf_similarity(n_similar=n_similar).get(str(book_id), [])]
+                        recs   = books[books["book_id"].isin(cf_ids)][
+                            ["book_id","title","author","rating","ratings_count","image"]
+                        ].copy()
+                        recs["cf_score"] = recs["book_id"].apply(
+                            lambda b: 1.0 - cf_ids.index(b) / len(cf_ids) if b in cf_ids else 0
+                        )
+                        recs = recs.sort_values("cf_score", ascending=False)
+                        tag_label, tag_color, score_col = "SVD CF", "#2DD4BF", "cf_score"
+
+                    if recs is None or len(recs) == 0:
+                        st.warning("Tidak ada rekomendasi ditemukan.")
+                    else:
+                        st.markdown(f"<h3>Top {len(recs)} Rekomendasi</h3>", unsafe_allow_html=True)
                         for i, row in enumerate(recs.itertuples()):
-                            render_rec_card(row._asdict(), i+1, "CBF", "#8B5CF6", "cbf_score")
+                            render_rec_card(row._asdict(), i+1, tag_label, tag_color, score_col)
 
 # ─────────────────────────────────────────────
 # PAGE: ANALITIK
@@ -305,7 +295,7 @@ elif page == "📊 Analitik":
     st.markdown("<h2>Analitik Dataset</h2>", unsafe_allow_html=True)
 
     tab_dist, tab_breakdown, tab_author, tab_tren = st.tabs([
-        "📚 Distribusi Rating", "⭐ Breakdown Rating", "✍️ Top Penulis", "📈 Tren Publikasi"
+        "📚 Distribusi Rating", "⭐ Breakdown per Buku", "✍️ Top Penulis", "📈 Tren Publikasi"
     ])
 
     with tab_dist:
@@ -317,27 +307,25 @@ elif page == "📊 Analitik":
         c1, c2 = st.columns(2)
         with c1:
             fig2 = px.histogram(ratings, x="rating", nbins=5,
-                                title="Distribusi Rating oleh User (1–5)",
+                                title="Distribusi Rating oleh Pengguna (1–5)",
                                 color_discrete_sequence=["#2DD4BF"])
             st.plotly_chart(plotly_dark(fig2), use_container_width=True)
         with c2:
             rpu  = ratings.groupby("user_id").size().reset_index(name="count")
             fig3 = px.histogram(rpu, x="count", nbins=40,
-                                title="Jumlah Rating per User",
+                                title="Jumlah Rating per Pengguna",
                                 color_discrete_sequence=["#8B5CF6"])
             st.plotly_chart(plotly_dark(fig3), use_container_width=True)
 
     with tab_breakdown:
-        # Stacked bar: ratings_1..5 untuk top 20 buku terpopuler
-        top20 = books.nlargest(20, "ratings_count")[
-            ["title", "ratings_1","ratings_2","ratings_3","ratings_4","ratings_5"]
+        top20      = books.nlargest(20, "ratings_count")[
+            ["title","ratings_1","ratings_2","ratings_3","ratings_4","ratings_5"]
         ].copy()
         top20["title_short"] = top20["title"].str[:30]
         top20_melt = top20.melt(id_vars="title_short",
                                 value_vars=["ratings_1","ratings_2","ratings_3","ratings_4","ratings_5"],
                                 var_name="Bintang", value_name="Jumlah")
-        top20_melt["Bintang"] = top20_melt["Bintang"].str.replace("ratings_","★")
-
+        top20_melt["Bintang"] = top20_melt["Bintang"].str.replace("ratings_", "★", regex=False)
         fig_br = px.bar(top20_melt, x="Jumlah", y="title_short", color="Bintang",
                         orientation="h", barmode="stack",
                         title="Breakdown Rating (★1–★5) — Top 20 Buku Terpopuler",
@@ -393,62 +381,33 @@ elif page == "📊 Analitik":
 # ─────────────────────────────────────────────
 elif page == "🧠 Tentang Model":
     st.markdown("<h2>Tentang Model</h2>", unsafe_allow_html=True)
-    st.markdown("<p style='color:#7A7060'>Arsitektur hybrid recommendation system yang digunakan BookMind.</p>", unsafe_allow_html=True)
 
-    # Diagram alur
     st.markdown("<h3>Alur Hybrid System</h3>", unsafe_allow_html=True)
     st.markdown("""
     <div style='background:#111827;border:1px solid #1C2840;border-radius:12px;padding:28px;margin-bottom:24px'>
         <div style='display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap'>
-
-            <!-- Input -->
             <div style='text-align:center;padding:12px 20px;background:#0D1222;border:1px solid #243258;border-radius:8px;min-width:110px'>
-                <div style='font-size:20px'>👤</div>
-                <div style='font-size:12px;color:#E8A320;font-weight:600;margin-top:4px'>User ID</div>
-                <div style='font-size:10px;color:#484038'>+ Rating History</div>
+                <div style='font-size:20px'>📖</div>
+                <div style='font-size:12px;color:#E8A320;font-weight:600;margin-top:4px'>Buku Input</div>
+                <div style='font-size:10px;color:#484038'>judul dipilih</div>
             </div>
-
             <div style='color:#484038;font-size:20px;margin:0 8px'>→</div>
-
-            <!-- Split -->
             <div style='display:flex;flex-direction:column;gap:10px'>
-
-                <!-- CBF -->
                 <div style='text-align:center;padding:10px 18px;background:#1C0D3A;border:1px solid #4C2D8C;border-radius:8px;min-width:160px'>
                     <div style='font-size:11px;color:#8B5CF6;font-weight:600;text-transform:uppercase;letter-spacing:.05em'>Content-Based</div>
                     <div style='font-size:10px;color:#7A7060;margin-top:2px'>TF-IDF + Cosine Sim</div>
-                    <div style='font-size:10px;color:#7A7060'>Anchor: top-rated book</div>
                 </div>
-
-                <!-- CF -->
                 <div style='text-align:center;padding:10px 18px;background:#0D2030;border:1px solid #0E5E6F;border-radius:8px;min-width:160px'>
                     <div style='font-size:11px;color:#2DD4BF;font-weight:600;text-transform:uppercase;letter-spacing:.05em'>Collaborative</div>
                     <div style='font-size:10px;color:#7A7060;margin-top:2px'>Truncated SVD</div>
-                    <div style='font-size:10px;color:#7A7060'>User-Item Matrix</div>
                 </div>
             </div>
-
             <div style='color:#484038;font-size:20px;margin:0 8px'>→</div>
-
-            <!-- Normalisasi -->
-            <div style='text-align:center;padding:12px 18px;background:#111827;border:1px solid #1C2840;border-radius:8px;min-width:130px'>
-                <div style='font-size:11px;color:#CCC4B0;font-weight:600'>Normalisasi</div>
-                <div style='font-size:10px;color:#7A7060;margin-top:4px'>Min-Max [0, 1]</div>
-                <div style='font-size:10px;color:#7A7060'>per score</div>
-            </div>
-
-            <div style='color:#484038;font-size:20px;margin:0 8px'>→</div>
-
-            <!-- Weighted -->
             <div style='text-align:center;padding:12px 18px;background:#1C1408;border:1px solid #6B4A10;border-radius:8px;min-width:150px'>
                 <div style='font-size:11px;color:#E8A320;font-weight:600'>Weighted Sum</div>
-                <div style='font-size:10px;color:#7A7060;margin-top:4px'>0.5 × CF</div>
-                <div style='font-size:10px;color:#7A7060'>+ 0.5 × CBF</div>
+                <div style='font-size:10px;color:#7A7060;margin-top:4px'>0.5 × CF + 0.5 × CBF</div>
             </div>
-
             <div style='color:#484038;font-size:20px;margin:0 8px'>→</div>
-
-            <!-- Output -->
             <div style='text-align:center;padding:12px 20px;background:#0D1222;border:1px solid #243258;border-radius:8px;min-width:110px'>
                 <div style='font-size:20px'>📚</div>
                 <div style='font-size:12px;color:#E8A320;font-weight:600;margin-top:4px'>Top-N</div>
@@ -458,23 +417,21 @@ elif page == "🧠 Tentang Model":
     </div>
     """, unsafe_allow_html=True)
 
-    # Perbandingan metode
     st.markdown("<h3>Perbandingan Metode</h3>", unsafe_allow_html=True)
     comparison = pd.DataFrame({
-        "Metode":       ["Content-Based (TF-IDF)", "Collaborative Filtering (SVD)", "Hybrid (Weighted 50/50)"],
-        "Tipe":         ["Memory-Based CBF", "Model-Based CF", "Hybrid"],
-        "Cold Start":   ["✅ Item baru OK", "❌ User & Item baru gagal", "⚠️ Partial (CBF fallback)"],
+        "Metode":       ["Content-Based (TF-IDF)", "Collaborative Filtering (SVD)", "Hybrid (50/50)"],
+        "Tipe":         ["Memory-Based", "Model-Based", "Hybrid"],
+        "Cold Start":   ["✅ Item baru OK", "❌ Perlu data historis", "⚠️ Partial"],
         "Serendipity":  ["🔴 Rendah", "🟢 Tinggi", "🟡 Sedang"],
         "Skalabilitas": ["🟢 Tinggi", "🟡 Sedang", "🟡 Sedang"],
         "Keunggulan":   [
-            "Transparan, tidak perlu data user lain",
-            "Temukan pola laten antar user",
+            "Transparan, tidak butuh data user lain",
+            "Menemukan pola tersembunyi antar pembaca",
             "Gabungkan kelebihan keduanya",
         ],
     })
     st.dataframe(comparison, use_container_width=True, hide_index=True)
 
-    # SVD explanation
     st.markdown("<h3>Cara Kerja SVD</h3>", unsafe_allow_html=True)
     st.markdown("""
     <div style='background:#111827;border:1px solid #1C2840;border-radius:10px;padding:20px;line-height:1.9;font-size:14px;color:#CCC4B0'>
@@ -492,7 +449,7 @@ elif page == "🧠 Tentang Model":
 st.markdown("""
 <div style='margin-top:48px;padding:20px;border-top:1px solid #1C2840;
              text-align:center;font-size:12px;color:#484038'>
-    BookMind · Statistical Data Mining · Institut Teknologi Sepuluh Nopember Surabaya<br>
-    <span style='color:#7A7060'>goodbooks-10k · SVD + TF-IDF Hybrid</span>
+    BookMind · Hybrid Book Recommendation Engine<br>
+    <span style='color:#7A7060'>goodbooks-10k · SVD + TF-IDF</span>
 </div>
 """, unsafe_allow_html=True)
