@@ -57,22 +57,28 @@ p { line-height: 1.7; }
 }
 [data-testid="stSidebar"] * { color: var(--text) !important; }
 
-/* Hide default radio buttons, style as nav links */
+/* ── Sidebar Nav — Style B ── */
+[data-testid="stSidebar"] [data-testid="stRadio"] {
+    background: var(--bg3) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 10px !important;
+    padding: 6px !important;
+}
 [data-testid="stSidebar"] [data-testid="stRadio"] > div {
     display: flex !important;
     flex-direction: column !important;
-    gap: 4px !important;
+    gap: 2px !important;
 }
 [data-testid="stSidebar"] [data-testid="stRadio"] label {
     background: transparent !important;
     border: none !important;
     border-radius: 6px !important;
-    padding: 9px 14px !important;
+    padding: 10px 14px !important;
     cursor: pointer !important;
     font-size: 14px !important;
     font-family: 'Crimson Pro', serif !important;
     color: var(--text2) !important;
-    transition: all .15s !important;
+    transition: background .15s, color .15s !important;
     width: 100% !important;
 }
 [data-testid="stSidebar"] [data-testid="stRadio"] label:hover {
@@ -82,9 +88,9 @@ p { line-height: 1.7; }
 [data-testid="stSidebar"] [data-testid="stRadio"] label[data-baseweb] {
     background: #1C1408 !important;
     color: var(--amber) !important;
-    border-left: 2px solid var(--amber) !important;
+    border-left: 3px solid var(--amber) !important;
+    padding-left: 11px !important;
 }
-/* Hide radio circles */
 [data-testid="stSidebar"] [data-testid="stRadio"] input { display: none !important; }
 [data-testid="stSidebar"] [data-testid="stRadio"] div[data-testid="stMarkdownContainer"] p {
     margin: 0 !important;
@@ -248,7 +254,7 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    page = st.radio("nav", ["Beranda", "Rekomendasi", "Analitik", "Tentang Model"],
+    page = st.radio("nav", ["◈  Beranda", "◉  Rekomendasi", "◆  Analitik", "◇  Tentang Model"],
                     label_visibility="collapsed")
 
     st.markdown("<hr style='border-color:#1C2840;margin:16px 0'>", unsafe_allow_html=True)
@@ -340,7 +346,7 @@ def plotly_dark(fig, height=None):
 # ─────────────────────────────────────────────
 # PAGE: BERANDA
 # ─────────────────────────────────────────────
-if page == "Beranda":
+if "Beranda" in page:
     st.markdown("""
     <div style='text-align:center;padding:48px 0 32px'>
         <div style='font-size:11px;letter-spacing:.2em;text-transform:uppercase;
@@ -415,7 +421,7 @@ if page == "Beranda":
 # ─────────────────────────────────────────────
 # PAGE: REKOMENDASI
 # ─────────────────────────────────────────────
-elif page == "Rekomendasi":
+elif "Rekomendasi" in page:
     st.markdown("<h2 style='margin-bottom:6px'>Cari Buku Serupa</h2>", unsafe_allow_html=True)
     st.markdown("<p style='color:#7A7060;margin-bottom:28px'>Ketik judul buku yang kamu suka — sistem akan merekomendasikan buku serupa.</p>", unsafe_allow_html=True)
 
@@ -501,7 +507,7 @@ elif page == "Rekomendasi":
 # ─────────────────────────────────────────────
 # PAGE: ANALITIK
 # ─────────────────────────────────────────────
-elif page == "Analitik":
+elif "Analitik" in page:
     st.markdown("<h2 style='margin-bottom:6px'>Analitik Dataset</h2>", unsafe_allow_html=True)
     st.markdown("<p style='color:#7A7060;margin-bottom:24px'>Goodbooks-10k · 10,000 buku · 6 juta ratings</p>", unsafe_allow_html=True)
 
@@ -731,7 +737,7 @@ elif page == "Analitik":
 # ─────────────────────────────────────────────
 # PAGE: TENTANG MODEL
 # ─────────────────────────────────────────────
-elif page == "Tentang Model":
+elif "Tentang" in page:
     st.markdown("<h2 style='margin-bottom:6px'>Tentang Model</h2>", unsafe_allow_html=True)
     st.markdown("<p style='color:#7A7060;margin-bottom:28px'>Arsitektur hybrid recommendation system yang digunakan BookMind.</p>", unsafe_allow_html=True)
 
