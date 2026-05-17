@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-from recommender import DataLoader, SVDRecommender, CBFRecommender, HybridRecommender
+from model import DataLoader, SVDRecommender, CBFRecommender, HybridRecommender
 
 st.set_page_config(
     page_title="BookMind",
